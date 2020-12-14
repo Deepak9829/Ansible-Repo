@@ -1,0 +1,100 @@
+- hosts: loadbalancer
+  tasks:
+  - name: "setup load balancer"
+    package:
+      name: "haproxy"
+         
+
+  - name: "Configure the haproxy file dynamically"
+    template:
+      dest: "/etc/haproxy/haproxy.cfg"
+      src: "haproxy.cfg.j2"
+
+  - name: "start haproxy service"
+    service:
+      name: "haproxy"
+      state: restarted
+
+
+
+- hosts: webserver
+  vars_files:
+  - var.yml
+  tasks:
+  - name: "Create Directory for mounting the CDROM"
+    file:
+        state: directory
+        path: "{{ dvd_mount_fold }}"
+  
+
+  - name: "mount CDROM"
+    mount:
+         src: "/dev/cdrom"
+         path: "{{ dvd_mount_fold }}"
+         state: mounted
+         fstype: "iso9660"
+  
+
+  - name: "create yum repository Repo1"
+    yum_repository:
+     name: "repo1"
+     description: "my local yum repo1"
+     baseurl: "/dvd/AppStream"
+     gpgcheck: no
+  
+  - name: "create yum repository Repo2"
+    yum_repository:
+     name: "repo2"
+     description: "mylocal yum repo2"
+     baseurl: "/dvd/BaseOS"
+     gpgcheck: no
+    
+  - name: "Install Httpd software"
+    package:
+     state: present
+     name: "httpd"
+
+  - name: "Upload the web content to the web directory"
+    copy:
+     dest: "{{ contpath }}/index.php"
+     src: "index.php"
+  
+  - name: "Configure HTTP Authentication"
+    replace:
+          path: "/etc/httpd/conf/httpd.conf"
+          regexp: "AllowOverride None"
+          replace: "AllowOverride AuthConfig"
+
+
+
+  - name: "upload the access key"
+    copy: 
+       dest: "/var/www/html/.htaccess"
+       src: ".htaccess"
+
+  - name: "Install Dependencies for HTTPAuth"
+    package:
+       name: "python36"
+
+  - pip:
+     name: "passlib"
+  
+  - name: "create user pass"
+    htpasswd:
+          path: "/etc/www.passwd"
+          name: "deepak"
+          password: "123456"
+
+  - name: "create firewall rule"
+    firewalld:
+     port: "{{port_no}}/tcp"
+     state: enabled
+     permanent: yes
+     immediate: yes
+
+  - name: " start webserver"
+    service:
+     name: "httpd"
+     state: restarted
+     enabled: yes
+

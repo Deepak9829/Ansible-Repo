@@ -1,0 +1,81 @@
+- hosts: 192.168.43.179
+  vars_files:
+  - var.yml
+  tasks:
+  - file:
+        state: directory
+        path: "{{ dvd_mount_fold }}"
+  
+
+  - mount:
+         src: "/dev/cdrom"
+         path: "{{ dvd_mount_fold }}"
+         state: mounted
+         fstype: "iso9660"
+  
+
+  - yum_repository:
+     name: "repo1"
+     description: "my local yum repo1"
+     baseurl: "/dvd/AppStream"
+     gpgcheck: no
+  
+  - yum_repository:
+     name: "repo2"
+     description: "mylocal yum repo2"
+     baseurl: "/dvd/BaseOS"
+     gpgcheck: no
+    
+  - package:
+     state: present
+     name: "httpd"
+
+  - file:
+     state: directory
+     path: "{{ contpath }}"
+
+  - template:
+     dest: "/etc/httpd/conf.d/web.conf" 
+     src: "web.conf"
+    notify: webservice
+
+
+  - copy:
+     dest: "{{ contpath }}/index.html"
+     content: "Hello World!! welcome to sajanpur my web."
+  
+  - replace:
+          path: "/etc/httpd/conf/httpd.conf"
+          regexp: "AllowOverride None"
+          replace: "AllowOverride AuthConfig"
+
+  - copy: 
+       dest: "/var/www/deepak/.htaccess"
+       src: ".htaccess"
+
+  - package:
+       name: "python36"
+
+  - pip:
+     name: "passlib"
+  
+  - htpasswd:
+          path: "/etc/www.passwd"
+          name: "deepak"
+          password: "123456"
+
+  - firewalld:
+     port: "{{port_no}}/tcp"
+     state: enabled
+     permanent: yes
+     immediate: yes
+
+
+
+  handlers:
+  - name: webservice
+    service:
+     name: "httpd"
+     state: restarted
+     enabled: yes
+

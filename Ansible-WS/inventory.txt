@@ -1,0 +1,22 @@
+
+[loadbalancer]
+192.168.43.189 ansible_user=root ansible_ssh_pass=123456 ansible_connection=ssh
+
+
+[aws_webserver]
+65.0.138.237
+15.206.209.93
+
+
+[webserver]
+ 
+192.168.43.179 ansible_user=root ansible_ssh_pass=123456 ansible_connection=ssh
+
+192.168.43.241 ansible_user=root ansible_ssh_pass=123456 ansible_connection=ssh
+
+
+[NAMENODE]
+192.168.43.179 ansible_user=root ansible_ssh_pass=123456 ansible_connection=ssh
+
+[DATANODE]
+192.168.43.241 ansible_user=root ansible_ssh_pass=123456 ansible_connection=ssh

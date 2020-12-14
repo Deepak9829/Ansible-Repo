@@ -1,0 +1,108 @@
+- hosts: all
+  tasks:
+
+  - name: "Copying the hadoop and JDK Software to the Dest" 
+    copy:
+     dest: "/"
+     src: "/ha-soft"
+  
+
+  - name: "Installing the Hadoop Software"
+    command: "rpm -ivh /ha-soft/hadoop-1.2.1-1.x86_64.rpm  --force"
+
+
+  - name: "Installing the JDK software"
+    shell: "rpm -ivh /ha-soft/jdk-8u171-linux-x64.rpm"
+    ignore_errors: yes
+    register: JDK
+
+  - debug:
+       var: JDK
+
+
+
+- hosts: [NAMENODE]
+  tasks:
+
+ 
+  - name: "Create a directory For Name NODE"
+    file:
+      path: "/NN"
+      state: directory
+
+
+
+  - name: "Configure the hdfs-site.xml file"
+    blockinfile:
+      path: "/etc/hadoop/hdfs-site.xml"
+      insertafter: "<configuration>"
+      block: |
+          <property>
+          <name>dfs.name.dir</name>
+          <value>/NN</value>
+          </property>
+
+  - name: "Configure the Core-site.xml file"
+    blockinfile:
+        path: "/etc/hadoop/core-site.xml"
+        insertafter: "<configuration>"
+        block: |
+          <property>
+          <name>fs.default.name</name>
+          <value>hdfs://0.0.0.0:9001</value>
+          </property>
+
+
+
+  - name: "Format the NAMENODE Directory"
+    command: "echo Y | hadoop namenode -format"
+
+ 
+
+  - name: "Start the NameNODE Service"
+    shell: "hadoop-daemon.sh start namenode"
+
+  - shell: "jps"
+    register: jpsN
+
+  - debug:
+       var: jpsN
+
+
+- hosts: [DATANODE]
+  tasks:
+  - name: "Create a directory For Name NODE"
+    file:
+      path: "DN1"
+      state: directory
+
+
+
+  - name: "Configure the hdfs-site.xml file"
+    blockinfile:
+      path: "/etc/hadoop/hdfs-site.xml"
+      insertafter: "<configuration>"
+      block: |
+          <property>
+          <name>dfs.data.dir</name>
+          <value>/DN1</value>
+          </property>
+
+  - name: "Configure the Core-site.xml file"
+    blockinfile:
+        path: "/etc/hadoop/core-site.xml"
+        insertafter: "<configuration>"
+        block: |
+          <property>
+          <name>fs.default.name</name>
+          <value>hdfs://192.168.43.179:9001</value>
+          </property>
+
+  - name: "Start the DATANODE Service"
+    command: "hadoop-daemon.sh start datanode"
+
+  - shell: "jps"
+    register: jpsD
+  
+  - debug:
+        var: jpsD

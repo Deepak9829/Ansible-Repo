@@ -1,0 +1,6 @@
+<property>
+
+<name>dfs.name.dir</name>
+<value>/NN</value>
+
+</property>

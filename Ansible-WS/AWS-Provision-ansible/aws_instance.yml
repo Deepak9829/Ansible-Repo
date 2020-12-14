@@ -1,0 +1,15 @@
+- hosts: localhost
+  tasks:
+  - ec2_instance:
+      region: ap-south-1
+      image_id: ami-08f63db601b82ff5f
+      instance_type: t2.micro
+      vpc_subnet_id: subnet-58006b14
+      security_group: sg-085f404e3928be35f
+      key_name: hadoop-key
+      name: myosfrom ansible
+      state: present
+      aws_access_key: AKIASRLH2K35IWPZ75H3
+      aws_secret_key: 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
+
+      
