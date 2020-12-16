@@ -9,7 +9,7 @@
       key_name: hadoop-key
       name: myosfrom ansible
       state: present
-      aws_access_key: AKIASRLH2K35IWPZ75H3
-      aws_secret_key: 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
+      aws_access_key: use ur own key
+      aws_secret_key: use ur own key
 
       
